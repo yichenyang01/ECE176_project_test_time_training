@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-from PIL import Image, ImageFilter, ImageEnhance
+from PIL import Image, ImageFilter, ImageEnhance, ImageDraw
 
 
 def add_gaussian_noise(img, mean=0, std=20):
@@ -99,4 +99,30 @@ def add_brightness(img, brightness_factor=1.5):
     img_b = ImageEnhance.Brightness(pillow_image).enhance(brightness_factor)
 
     return cv2.cvtColor(np.array(img_b), cv2.COLOR_RGB2BGR)
+
+
+def add_fog(img, width=5, height=5):
+    """
+    :param img:
+    :param width: width of fog particle
+    :param height: height of fog particle
+    :return:
+    """
+    # Create noise
+    noise = np.random.rand(img.shape[0], img.shape[1])
+    noise = noise * 255
+    noise = noise.astype(np.uint8)
+
+    # Create a fog mask by applying a Gaussian blur to the noise matrix
+    fog_mask = cv2.GaussianBlur(noise, (width, height), sigmaX=0, sigmaY=0)
+    fog_mask = cv2.cvtColor(fog_mask, cv2.COLOR_GRAY2BGR)
+
+    # Add transparency to the fog mask
+    alpha = np.random.uniform(0, 1)
+    fog_mask = alpha * fog_mask
+
+    # Add the fog mask to the input image
+    img_f = cv2.add(img, fog_mask.astype(img.dtype))
+
+    return img_f
 
